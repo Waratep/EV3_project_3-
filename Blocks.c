@@ -10,8 +10,8 @@
 
 void beep(int i);
 void check_font_block(float sensor);
-void forward(float x);
-void backward(float y);
+void forward(int bias ,float x);
+void backward(int loop_i,float y);
 void turn_left();
 void two_turn_left();
 void turn_right();
@@ -21,70 +21,252 @@ void _handle();
 void close_handle();
 void stop_motor();
 int check_block_color();
+void checkbox();
+void _init_();
+void forward_until(int point);
+int seq = 0;
 int _handle_status , have_font_block , open_status = 0;
 
+//        north(0)
 
+//	east(1)	      west(2)
+
+//			  south(3)
+
+int direction = 0;
+int x = 10 ,y = 9;
+int ultra = 0;
+void checkblock(int x,int y);
+int checkx(int x,int i);
+int checky(int y,int i);
+void checkmap();
+void printmap();
+void printxy(int x,int y);
+
+int map[][] =
+{   //0 1 2 3 4 5 6 7 8 9
+	{1,1,1,1,1, 1,1,1,1,1},//0
+	{1,0,0,0,0, 0,0,0,0,1},//1
+	{1,0,0,0,0, 0,0,0,0,1},//2
+	{1,0,0,0,0, 0,0,0,0,1},//3
+	{1,0,0,0,0, 0,0,0,0,1},//4
+
+	{1,0,0,0,0, 0,0,0,0,1},//5
+	{1,0,0,0,0, 0,0,0,0,1},//6
+	{1,0,0,0,0, 0,0,0,0,1},//7
+	{1,0,0,0,0, 0,0,0,0,1},//8
+	{1,1,1,1,1, 1,1,1,1,1} //9
+};
 task main()
 {
-	int counter = 0;
+	int left,right,pattern,counter = 0;
+	float buff_bias = 0;
 
-	while(1){
-		//if(SensorValue[S1] < 10 && SensorValue[S4] < 10) beep(0);
-		int g = 0;
-		if(counter >= 2000){
-
-			stop_motor();
-			g = check_block_color();
-			displayVariableValues(0,g);
-			two_turn_left();
-			if(SensorValue[S3] < 20) beep(2);
-			else beep(1);
-			for(int i = 0 ; i < 2000 ; i++){
-				forward(0.8);
-			}
-			stop_motor();
-			_open();
-			backward(0.5);
-			stop_motor();
-			_handle();
-		}
-		if(SensorValue[S2] < 10){
-			counter++;
-			//stop_motor();
-		}
-		else{
-			forward(0.3);
-			counter = 0;
-		}
-	}
-
-}
-int check_block_color(){
-	int color,last_ultra,ultra,error;
-	last_ultra = SensorValue[S2];
-	ultra = SensorValue[S2];
-	for(int i = 0; i < 10000 ; i++){
-		ultra = SensorValue[S2];
-		error = 3 - SensorValue[S2];
-		setMotorSpeed(motorA, error*(-3));
-		setMotorSpeed(motorD, error*(-3));
-	}
-	if(SensorValue[S3] > 25){
-		color = 6; // orange
-	}else{
-		color = 9; // black
-	}
-
-	for(int i = 0; i < 10000 ; i++){
-		ultra = SensorValue[S2];
-		error = last_ultra - SensorValue[S2];
-		setMotorSpeed(motorA, error*(-3));
-		setMotorSpeed(motorD, error*(-3));
-	}
+	//init();
+	_init_();
+	printmap();
 	stop_motor();
-	return color;
+	sleep(100000);
+
+	//two_turn_left();
+	//turn_left();
+	//turn_right();
+
+	//while(1){
+	//	//if(SensorValue[S1] < 10 && SensorValue[S4] < 10) beep(0);
+	//	int g = 0;
+	//	if(counter >= 2000){
+
+	//		stop_motor();
+	//		g = check_block_color();
+	//		displayVariableValues(0,g);
+	//		two_turn_left();
+	//		if(SensorValue[S3] < 20) beep(2);
+	//		else beep(1);
+	//		for(int i = 0 ; i < 2000 ; i++){
+	//			forward(40,0.5);
+	//		}
+	//		stop_motor();
+	//		_open();
+	//		backward(0.5);
+	//		stop_motor();
+	//		_handle();
+	//	}
+	//if(SensorValue[S2] < 10){
+	//	counter++;
+	//	//stop_motor();
+	//}
+	//	else{
+	//		buff_bias = buff_bias > 80 ? 80:buff_bias;
+	//		buff_bias+=0.1;
+	//		forward(buff_bias,0.5);
+	//		counter = 0;
+	//	}
+	//}
 
 }
+
+void _init_(){
+
+	int counter = 0 , left , right , check_turn = 0 , pattern = 0 , point = 0 , angle = 0;
+	float buff_bias = 0;
+	while(point < 40){
+		left = SensorValue[S1];
+		right = SensorValue[S4];
+		left = left > 40 ? 40:left;
+		left = left < 5 ? 5:left;
+		right = right > 40 ? 40:right;
+		right = right < 5 ? 5:right;
+		buff_bias = buff_bias > 70 ? 70:buff_bias;
+		buff_bias += 0.1;
+		forward(buff_bias,0.6);
+		if(counter == 10){
+			//for(int i = 0 ; i < 300 ;i++) forward(50,0.5);
+			buff_bias = 0;
+			turn_left();
+			counter = 1;
+			point++;
+			angle++;
+		}
+
+		if(left < 14 && right < 14) {
+			beep(0);
+			switch(angle){
+			case 0 : x--; break;
+			case 1 : y--; break;
+			case 2 : x++; break;
+			case 3 : y++; break;
+			}
+			counter++;
+			for(int i = 0 ; i < 300 ;i++) forward(50,0.5);
+			if(counter != 10 && counter != 1){
+				stop_motor();
+				turn_left();
+				checkmap();
+				checkbox();
+				printmap();
+			}
+			point++;
+		}
+
+	}
+	turn_left();
+	direction = 0;
+
+}
+
+void forward_until(int point){
+	int left, right ,count = 0;
+	float buff_bias = 0;
+	while(count < point){
+		left = SensorValue[S1];
+		right = SensorValue[S4];
+		left = left > 40 ? 40:left;
+		left = left < 5 ? 5:left;
+		right = right > 40 ? 40:right;
+		right = right < 5 ? 5:right;
+		buff_bias = buff_bias > 70 ? 70:buff_bias;
+		buff_bias += 0.1;
+		forward(buff_bias,0.6);
+		if(left < 14 && right < 14) {
+			beep(0);
+			count++;
+		}
+	}
+	for(int i = 0 ; i < 300 ;i++) forward(50,0.5);
+	stop_motor();
+}
+
+
+void checkbox(){
+	int counter = 0 , g = 0;
+	float avg_color = 0
+	if(seq == 1){
+		stop_motor();
+		for(int i = 0; i < 2000 ; i++){
+			avg_color = SensorValue[S3];
+		}
+		if(avg_color >= 28){
+				g = 6; // orange
+				}else{
+				g = 9; // black
+		}
+		switch(g){
+		case 6 : map[checkx(x,1)][checky(y,1)] = 6 ; break;
+		case 9 : map[checkx(x,1)][checky(y,1)] = 9; break;
+		default : if(map[checkx(x,1)][checky(y,1)] == 6){map[checkx(x,1)][checky(y,1)] = 6;}
+							if(map[checkx(x,1)][checky(y,1)] == 9){map[checkx(x,1)][checky(y,1)] = 9;}
+							else{map[checkx(x,1)][checky(y,1)] = 1;} break;
+		}
+		turn_right();
+	}else if(seq == 2){
+		stop_motor();
+		forward_until(1);
+		for(int i = 0; i < 2000 ; i++){
+			avg_color = SensorValue[S3];
+		}
+		if(avg_color >= 28){
+				g = 6; // orange
+				}else{
+				g = 9; // black
+		}
+		switch(g){
+		case 6 : map[checkx(x,2)][checky(y,2)] = 6; break;
+		case 9 : map[checkx(x,2)][checky(y,2)] = 9; break;
+		default : if(map[checkx(x,2)][checky(y,2)] == 6){map[checkx(x,2)][checky(y,2)] = 6;}
+							if(map[checkx(x,2)][checky(y,2)] == 9){map[checkx(x,2)][checky(y,2)] = 9;}
+							else{map[checkx(x,2)][checky(y,2)] = 1;} break;
+		}
+		two_turn_left();
+		forward_until(1);
+		turn_left();
+	}else if(seq == 3){
+		stop_motor();
+		forward_until(2);
+		for(int i = 0; i < 2000 ; i++){
+			avg_color = SensorValue[S3];
+		}
+		if(avg_color >= 28){
+				g = 6; // orange
+				}else{
+				g = 9; // black
+		}
+		switch(g){
+		case 6 : map[checkx(x,3)][checky(y,3)] = 6; break;
+		case 9 : map[checkx(x,3)][checky(y,3)] = 9; break;
+		default : if(map[checkx(x,3)][checky(y,3)] == 6){map[checkx(x,3)][checky(y,3)] = 6;}
+							if(map[checkx(x,3)][checky(y,3)] == 9){map[checkx(x,3)][checky(y,3)] = 9;}
+							else{map[checkx(x,3)][checky(y,3)] = 1;} break;
+		}
+		two_turn_left();
+		forward_until(2);
+		turn_left();
+	}else if(seq == 4){
+		stop_motor();
+		forward_until(3);
+		for(int i = 0; i < 2000 ; i++){
+			avg_color = SensorValue[S3];
+		}
+		if(avg_color >= 28){
+				g = 6; // orange
+				}else{
+				g = 9; // black
+		}
+		switch(g){
+		case 6 : map[checkx(x,4)][checky(y,4)] = 6; break;
+		case 9 : map[checkx(x,4)][checky(y,4)] = 9; break;
+		default : if(map[checkx(x,4)][checky(y,4)] == 6){map[checkx(x,4)][checky(y,4)] = 6;}
+							if(map[checkx(x,4)][checky(y,4)] == 9){map[checkx(x,4)][checky(y,4)] = 9;}
+							else{map[checkx(x,4)][checky(y,4)] = 1;} break;
+		}
+		two_turn_left();
+		forward_until(3);
+		turn_left();
+	}else{
+		turn_right();
+	}
+}
+
 
 void stop_motor(){
 
@@ -93,15 +275,15 @@ void stop_motor(){
 }
 
 void _open(){
-	for(int n = 0 ; n < 100000 ; n++){
-		setMotorSpeed(motorB, 30);
+	for(int n = 0 ; n < 50000 ; n++){
+		setMotorSpeed(motorB, 60);
 	}
 	open_status = 1;
 }
 
 void _close(){
-	for(int n = 0 ; n < 100000 ; n++){
-		setMotorSpeed(motorB, -30);
+	for(int n = 0 ; n < 50000 ; n++){
+		setMotorSpeed(motorB, -60);
 	}
 	open_status = 0;
 }
@@ -109,9 +291,9 @@ void _close(){
 void _handle(){
 	if(open_status){
 
-			setMotorSpeed(motorB, -30);
-			sleep(8000);
-			setMotorSpeed(motorB, 0);
+		setMotorSpeed(motorB, -60);
+		sleep(4000);
+		setMotorSpeed(motorB, 0);
 	}
 	_handle_status = 1;
 }
@@ -119,34 +301,41 @@ void _handle(){
 void _handle(){
 	if(_handle_status){
 
-			setMotorSpeed(motorB, 30);
-			sleep(8000);
-			setMotorSpeed(motorB, 0);
+		setMotorSpeed(motorB, 60);
+		sleep(4000);
+		setMotorSpeed(motorB, 0);
 	}
 	_handle_status = 0;
 }
 
-void forward(float x){
+void forward(int bias , float x){
 
-		int pid , error ,last_error , sum_error, left , right = 0;
-		left = SensorValue[S1];
-		right = SensorValue[S4];
-		left = left > 40 ? 40:left;
-		left = left < 5 ? 5:left;
-		right = right > 40 ? 40:right;
-		right = right < 5 ? 5:right;
-		last_error = error;
-		//`if(left == 5 && right == 5) beep(1);
-		error = left - right;
-		sum_error += error;
-		pid = error*(x) + (error-last_error)*3;
-		setMotorSpeed(motorA, 40+pid);
-		setMotorSpeed(motorD, 40+pid*(-1));
+	int pid , error ,last_error , sum_error, left , right = 0;
+	left = SensorValue[S1];
+	right = SensorValue[S4];
+	left = left > 40 ? 40:left;
+	left = left < 5 ? 5:left;
+	right = right > 40 ? 40:right;
+	right = right < 5 ? 5:right;
+	last_error = error;
+	//`if(left == 5 && right == 5) beep(1);
+	error = left - right;
+	sum_error += error;
+	pid = error*(x) + (error-last_error)*3;
+	//int buff_bias = 0;
+	//while(bias > buff_bias){
+	//	buff_bias++;
+	//	setMotorSpeed(motorA, buff_bias+pid);
+	//	setMotorSpeed(motorD, buff_bias+pid*(-1));
+	//	sleep(10);
+	//}
+	setMotorSpeed(motorA, bias+pid);
+	setMotorSpeed(motorD, bias+pid*(-1));
 
 }
 
-void backward(float y){
-	for(int j = 0 ; j < 10000 ; j++){
+void backward(int loop_i ,float y){
+	for(int j = 0 ; j < loop_i ; j++){  //14500
 		setMotorSpeed(motorA, -50);
 		setMotorSpeed(motorD, -50);
 	}
@@ -154,50 +343,149 @@ void backward(float y){
 
 void two_turn_left(){
 
-	for(int i = 0 ; i < 20000 ; i++){
+	for(int i = 0 ; i < 12000 ; i++){
 		setMotorSpeed(motorA,-30);
 		setMotorSpeed(motorD,30);
 	}
-	while(SensorValue[S4] > 10){
+	while(SensorValue[S4] > 28){
 		setMotorSpeed(motorA,-30);
 		setMotorSpeed(motorD,30);
+	}
+	while(SensorValue[S1] >= 28){
+
+		setMotorSpeed(motorA,(SensorValue[S1]-28)*(1.5));
+		setMotorSpeed(motorD,(SensorValue[S1]-28)*(-1.5));
 	}
 
 	stop_motor();
-
+	switch(direction){
+	case 0 : direction = 3; break;
+	case 1 : direction = 2; break;
+	case 2 : direction = 1; break;
+	case 3 : direction = 0; break;
+	}
 }
 
 void turn_left(){
 
-	for(int i = 0 ; i < 8500 ; i++){
+	for(int i = 0 ; i < 4000 ; i++){
 		setMotorSpeed(motorA,-30);
 		setMotorSpeed(motorD,30);
 	}
-	while(SensorValue[S4] > 10){
-		setMotorSpeed(motorA,-30);
-		setMotorSpeed(motorD,30);
+	while(SensorValue[S4] > 28){
+		setMotorSpeed(motorA,-15);
+		setMotorSpeed(motorD,15);
+	}
+	while(SensorValue[S1] >= 28){
+		setMotorSpeed(motorA,(SensorValue[S1]-28)*(1.5));
+		setMotorSpeed(motorD,(SensorValue[S1]-28)*(-1.5));
 	}
 
 	stop_motor();
-
+	switch(direction){
+	case 0 : direction = 1; break;
+	case 1 : direction = 3; break;
+	case 2 : direction = 0; break;
+	case 3 : direction = 2; break;
+	}
 }
 
 void turn_right(){
 
-	for(int i = 0 ; i < 8500 ; i++){
+	for(int i = 0 ; i < 4000 ; i++){
 		setMotorSpeed(motorA,30);
 		setMotorSpeed(motorD,-30);
 	}
-	while(SensorValue[S1] > 10){
-		setMotorSpeed(motorA,30);
-		setMotorSpeed(motorD,-30);
+	while(SensorValue[S1] > 28){
+		setMotorSpeed(motorA,15);
+		setMotorSpeed(motorD,-15);
 	}
+	while(SensorValue[S4] >= 28){
+
+		setMotorSpeed(motorA,(SensorValue[S1]-28)*(1.5));
+		setMotorSpeed(motorD,(SensorValue[S1]-28)*(-1.5));
+	}
+
 	stop_motor();
+
+	switch(direction){
+	case 0 : direction = 2; break;
+	case 1 : direction = 0; break;
+	case 2 : direction = 3; break;
+	case 3 : direction = 1; break;
+	}
 }
 
 void beep(int i) {
 	for (int j = -1; j < i ; j++) {
 		playTone(4000, 10);
 		sleep(200);
+	}
+}
+
+void checkmap(){
+	//if(SensorValue[S2] < 10){
+	//	counter++;
+	//}
+
+	for(int i = 0 ; i < 3000 ; i++) ultra = SensorValue[S2];
+	checkblock(x,y);
+}
+void checkblock(int x,int y){
+	if(ultra >= 4 && ultra <= 12){
+		map[checkx(x,0)][checky(y,0)]=1;
+		map[checkx(x,1)][checky(y,1)]=4;
+		seq = 1;
+	}
+	else if(ultra >= 32 && ultra <= 42){
+		map[checkx(x,0)][checky(y,0)]=1;
+		map[checkx(x,1)][checky(y,1)]=1;
+		map[checkx(x,2)][checky(y,2)]=4;
+		seq = 2;
+	}
+	else if(ultra >= 64 && ultra <= 74){
+		map[checkx(x,0)][checky(y,0)]=1;
+		map[checkx(x,1)][checky(y,1)]=1;
+		map[checkx(x,2)][checky(y,2)]=1;
+		map[checkx(x,3)][checky(y,3)]=4;
+		seq = 3;
+	}
+	else if(ultra >= 90 && ultra <= 102){
+		map[checkx(x,0)][checky(y,0)]=1;
+		map[checkx(x,1)][checky(y,1)]=1;
+		map[checkx(x,2)][checky(y,2)]=1;
+		map[checkx(x,3)][checky(y,3)]=1;
+		map[checkx(x,4)][checky(y,4)]=4;
+		seq = 4;
+	}
+	else{
+		for(int i=0;i<=4;i++){
+			if( checkx(x,i)>=0 && checkx(x,i)<=9 && checky(y,i)>=0 && checky(y,i)<=9 )
+			{
+				map[checkx(x,i)][checky(y,i)]=1;
+			}
+		}
+		seq = 0;
+	}
+}
+int checkx(int x,int i){
+	switch(direction){
+	case 0: return x-i;
+	case 1: return x;
+	case 2: return x;
+	default: return x+i;
+	}
+}
+int checky(int y,int i){
+	switch(direction){
+	case 0: return y;
+	case 1: return y-i;
+	case 2: return y+i;
+	default: return y;
+	}
+}
+void printmap(){
+	for(int i = 0 ; i < 10 ; i++){
+		displayTextLine(i,"%d %d %d %d %d %d %d %d %d %d %d",map[i][0],map[i][1],map[i][2],map[i][3],map[i][4],map[i][5],map[i][6],map[i][7],map[i][8],map[i][9]);
 	}
 }
