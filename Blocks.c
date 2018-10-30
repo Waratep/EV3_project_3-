@@ -10,6 +10,7 @@
 
 #define power_turn 40
 #define power_delay 100
+#define power_delay2 250
 #define color_define 28
 #define turn_delay 5000
 #define two_turn_delay 10000
@@ -31,7 +32,7 @@ void findoneandkeepbox();
 void keepbox();
 void closearm();
 int seq = 0;
-int six = 0,nine = 0,color = 0,sum_error = 0,enable_pid2 = 0;;
+int six = 0,nine = 0,color = 0,sum_error = 0,enable_delay = 0;;
 float last_error=0;
 
 
@@ -50,8 +51,8 @@ int min4(int a, int b, int c, int d);
 void _move();
 void min2way(int a, int b,int checkw);
 void min3way(int a, int b, int c);
-float kp = 0.5,ki = 3.5,kd = 0.00012;
-float kp2 = 0.5,ki2 = 0,kd2 = 0;
+float kp = 0.5,ki = 0,kd = 3.5;
+
 
 //void keep_box();
 
@@ -149,9 +150,9 @@ int mapone[10][10] =  //changemap at
 task main()
 {
 
-	enable_pid2 = 0;
-	//_init_();
-	enable_pid2 = 1;
+	enable_delay = 0;
+	_init_();
+	enable_delay = 1;
 	//while(1){
 	//	forward(70,0.6);
 	//}
@@ -197,6 +198,7 @@ task main()
           _move();
       }
   }
+  closearm();
 
 
 	//keepbox();
@@ -237,7 +239,11 @@ void _init_(){
 			case 3 : y++; break;
 			}
 			counter++;
-			for(int i = 0 ; i < power_delay ;i++) forward(50,0.5);
+			if(enable_delay == 0){
+				for(int i = 0 ; i < power_delay2 ;i++) forward(50,0.5);
+			}else{
+				for(int i = 0 ; i < power_delay ;i++) forward(50,0.5);
+			}
 			if(counter != 10 && counter != 1){
 				stop_motor();
 				turn_left();
@@ -279,7 +285,11 @@ void forward_until(int point){
 			count++;
 		}
 	}
-	for(int i = 0 ; i < power_delay ;i++) forward(50,0.5);
+		if(enable_delay == 0){
+			for(int i = 0 ; i < power_delay2 ;i++) forward(50,0.5);
+		}else{
+			for(int i = 0 ; i < power_delay ;i++) forward(50,0.5);
+		}
 
 	stop_motor();
 }
@@ -308,8 +318,11 @@ void forward_until_noxy(int point){
 			count++;
 		}
 	}
-	for(int i = 0 ; i < power_delay ;i++) forward(50,0.5);
-
+		if(enable_delay == 0){
+			for(int i = 0 ; i < power_delay2 ;i++) forward(50,0.5);
+		}else{
+			for(int i = 0 ; i < power_delay ;i++) forward(50,0.5);
+		}
 	stop_motor();
 }
 
@@ -584,11 +597,7 @@ void forward(int bias ,float x){
 	error = left - right;
 	sum_error += error;
 	//displayTextLine(0,"%f  %f  %f",error*x,(error-last_error)*(3.5),sum_error*(0.0012));
-	if(enable_pid2 == 1){
-		pid = error*(kp2) + (error-last_error)*(kd2) + sum_error*(ki2);
-	}else{
-		pid = error*(kp) + (error-last_error)*(kd2) + sum_error*(ki);
-	}
+	pid = error*(kp) + (error-last_error)*(kd) + sum_error*(ki);
 	//pid = error*(x) + (error-last_error)*(3.5) + sum_error*(0.0002);
 	//int buff_bias = 0;
 	//while(bias > buff_bias){
