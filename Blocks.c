@@ -34,6 +34,8 @@ void forward_until(int point);
 void edit_map();
 void blink(int i);
 void findoneandkeepbox();
+void keepbox();
+void closearm();
 int seq = 0;
 int _handle_status , have_font_block , open_status = 0;
 int six = 0,nine = 0,color = 0;
@@ -119,14 +121,16 @@ task main()
 {
 
 	//init();
-	_init_();
-	printmap();
-	stop_motor();
-	//sleep(10000);
-	edit_map();
-	printmap();
-	sleep(5000);
-	findoneandkeepbox();
+	//_init_();
+	//printmap();
+	//stop_motor();
+	////sleep(10000);
+	//edit_map();
+	//printmap();
+	//sleep(5000);
+	//findoneandkeepbox();
+	keepbox();
+	//closearm();
 
 
 }
@@ -333,7 +337,17 @@ void findoneandkeepbox(){
   prekeep(bx,by);
 
   //printf("keep block\n");
-  int error = 0;
+  keepbox();
+
+  status = 1;
+
+}
+
+void keepbox(){
+	int error = 0 , left = 0 , right = 0;
+	resetMotorEncoder(motorA);
+	resetMotorEncoder(motorD);
+
   for(int i = 0 ; i < 5000 ; i++){
   	ultra = SensorValue[S2];
   	error = (12 - ultra)*3;
@@ -343,25 +357,46 @@ void findoneandkeepbox(){
   stop_motor();
   two_turn_left();
   stop_motor();
-	for(int j = 0 ; j < 32000 ; j++){
-  	setMotorSpeed(motorB, 60);
+
+	for(int j = 0 ; j < 37000 ; j++){ //open arm
+  	setMotorSpeed(motorB, 55);
   }
   setMotorSpeed(motorB, 0);
-  for(int j = 0 ; j < 10000 ; j++){
+
+ 	for(int i = 0 ; i < 450 ; i++){   //init turn left
+		setMotorSpeed(motorA,-30);
+		setMotorSpeed(motorD,30);
+	}
+
+  for(int j = 0 ; j < 9000 ; j++){ //backward
   	setMotorSpeed(motorA, -30);
 		setMotorSpeed(motorD, -30);
   }
   stop_motor();
-  for(int j = 0 ; j < 14000 ; j++){
+  for(int j = 0 ; j < 15000 ; j++){//close aem
   	setMotorSpeed(motorB, -60);
   }
   setMotorSpeed(motorB, 0);
 
+  for(int i = 0 ; i < 1000 ;i++){
+  	forward(30,0.5);
+  }
+  stop_motor();
   status = 1;
 
+  //////////////////////////////////////////////
 
 
+}
 
+void closearm(){
+	for(int j = 0 ; j < 15000 ; j++){//open arm
+  	setMotorSpeed(motorB, 60);
+  }
+  setMotorSpeed(motorB, 0);
+  	for(int j = 0 ; j < 37000 ; j++){ //close arm
+  	setMotorSpeed(motorB, -55);
+  }
 }
 
 void prekeep(int bx ,int by){
