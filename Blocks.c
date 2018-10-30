@@ -16,28 +16,21 @@
 #define delay_color 3000
 
 void beep(int i);
-void check_font_block(float sensor);
-void forward(int bias ,float x);
-void backward(int loop_i,float y);
+void forward(int bias ,float x,float y,float z);
 void turn_left();
 void two_turn_left();
 void turn_right();
-void _open();;
-void _close();
-void _handle();
-void close_handle();
 void stop_motor();
-int check_block_color();
 void checkbox();
 void _init_();
 void forward_until(int point);
+void forward_until_noxy(int point);
 void edit_map();
 void blink(int i);
 void findoneandkeepbox();
 void keepbox();
 void closearm();
 int seq = 0;
-int _handle_status , have_font_block , open_status = 0;
 int six = 0,nine = 0,color = 0;
 
 
@@ -56,15 +49,10 @@ int min4(int a, int b, int c, int d);
 void _move();
 void min2way(int a, int b,int checkw);
 void min3way(int a, int b, int c);
-int checkleft(int x, int y);
-void keep_box();
 
-int checkxf(int x);
-int checkyf(int y);
-int checkxl(int x);
-int checkyl(int y);
-int checkxr(int x);
-int checkyr(int y);
+//void keep_box();
+
+
 
 
 //        north(0)
@@ -83,23 +71,61 @@ int checkx(int x,int i);
 int checky(int y,int i);
 void checkmap();
 void printmap();
-void printxy(int x,int y);
+void printmapfloodfill();
 void prekeep(int bx ,int by);
+
+int checkxf(int x);
+int checkyf(int y);
+int checkxl(int x);
+int checkyl(int y);
+int checkxr(int x);
+int checkyr(int y);
+int checkxb(int x);
+int checkyb(int y);
+
+int checkxne(int x);
+int checkyne(int y);
+int checkxnw(int x);
+int checkynw(int y);
+int checkxse(int x);
+int checkyse(int y);
+int checkxsw(int x);
+int checkysw(int y);
+
+void checkleftbox1(int x, int y);
+void checkrightbox1(int x, int y);
+
+
+//int map[][] =
+//{   //0 1 2 3 4 5 6 7 8 9
+//	{1,1,1,1,1, 1,1,1,1,1},//0
+//	{1,0,0,0,0, 0,0,0,0,1},//1
+//	{1,0,0,0,0, 0,0,0,0,1},//2
+//	{1,0,0,0,0, 0,0,0,0,1},//3
+//	{1,0,0,0,0, 0,0,0,0,1},//4
+
+//	{1,0,0,0,0, 0,0,0,0,1},//5
+//	{1,0,0,0,0, 0,0,0,0,1},//6
+//	{1,0,0,0,0, 0,0,0,0,1},//7
+//	{1,0,0,0,0, 0,0,0,0,1},//8
+//	{1,1,1,1,1, 1,1,1,1,1} //9
+//};
 
 int map[][] =
 {   //0 1 2 3 4 5 6 7 8 9
 	{1,1,1,1,1, 1,1,1,1,1},//0
-	{1,0,0,0,0, 0,0,0,0,1},//1
-	{1,0,0,0,0, 0,0,0,0,1},//2
-	{1,0,0,0,0, 0,0,0,0,1},//3
-	{1,0,0,0,0, 0,0,0,0,1},//4
+	{1,1,1,1,1, 1,9,1,1,1},//1
+	{1,1,1,6,9, 1,1,1,1,1},//2
+	{1,9,1,1,1, 1,1,1,1,1},//3
+	{1,1,1,1,1, 1,1,1,1,1},//4
 
-	{1,0,0,0,0, 0,0,0,0,1},//5
-	{1,0,0,0,0, 0,0,0,0,1},//6
-	{1,0,0,0,0, 0,0,0,0,1},//7
-	{1,0,0,0,0, 0,0,0,0,1},//8
+	{1,1,1,1,1, 1,1,6,1,1},//5
+	{1,1,1,1,1, 1,1,6,1,1},//6
+	{1,1,1,1,1, 6,1,9,1,1},//7
+	{1,1,1,1,1, 1,1,1,1,1},//8
 	{1,1,1,1,1, 1,1,1,1,1} //9
 };
+
 
 int mapone[10][10] =  //changemap at
 {   //0 1 2 3 4 5 6 7 8 9
@@ -120,16 +146,57 @@ int mapone[10][10] =  //changemap at
 task main()
 {
 
-	//init();
+
 	//_init_();
-	//printmap();
-	//stop_motor();
-	////sleep(10000);
-	//edit_map();
-	//printmap();
-	//sleep(5000);
-	//findoneandkeepbox();
-	keepbox();
+
+	//while(1){
+	//	forward(70,0.5,5,0.0005);
+	//}
+	x = 9;
+	y = 9;
+	findoneandkeepbox();
+	map[bx][by]=1;
+	forward_until_noxy(1);
+	bx=7;
+  by=2;
+	//bx = 1;
+	//by = 7;
+
+  for(int i=0;i<20;i++){
+     changeone(bx,by);
+  }
+  printmapfloodfill();
+  while(x!=bx || y!=by)
+  {
+      if(mapone[x][y]==1){
+          break; //keepblock
+      }else{
+          _move();
+      }
+  }
+
+	closearm();
+	findoneandkeepbox();
+	map[bx][by]=1;
+	forward_until_noxy(1);
+	bx = 1;
+	by = 7;
+
+	for(int i=0;i<20;i++){
+     changeone(bx,by);
+  }
+  printmapfloodfill();
+  while(x!=bx || y!=by)
+  {
+      if(mapone[x][y]==1){
+          break; //keepblock
+      }else{
+          _move();
+      }
+  }
+
+
+	//keepbox();
 	//closearm();
 
 
@@ -137,7 +204,7 @@ task main()
 
 void _init_(){
 
-	int counter = 0 , left , right , check_turn = 0 , pattern = 0 , point = 0 , angle = 0;
+	int counter = 0 , left , right , point = 0 , angle = 0;
 	float buff_bias = 0;
 	while(point < 40){
 		left = SensorValue[S1];
@@ -148,7 +215,7 @@ void _init_(){
 		right = right < 5 ? 5:right;
 		buff_bias = buff_bias > 70 ? 70:buff_bias;
 		buff_bias += 0.05;
-		forward(buff_bias,0.6);
+		forward(buff_bias,0.6,5,0.0005);
 		if(counter == 10){
 			//for(int i = 0 ; i < 300 ;i++) forward(50,0.5);
 			buff_bias = 0;
@@ -197,7 +264,7 @@ void forward_until(int point){
 		right = right < 5 ? 5:right;
 		buff_bias = buff_bias > 70 ? 70:buff_bias;
 		buff_bias += 0.1;
-		forward(buff_bias,0.6);
+		forward(buff_bias,0.6,0,0);
 		if(left < 14 && right < 14) {
 			beep(0);
 			switch(di){
@@ -214,10 +281,38 @@ void forward_until(int point){
 	stop_motor();
 }
 
+void forward_until_noxy(int point){
+	int left, right ,count = 0;
+	float buff_bias = 0;
+	while(count < point){
+		left = SensorValue[S1];
+		right = SensorValue[S4];
+		left = left > 40 ? 40:left;
+		left = left < 5 ? 5:left;
+		right = right > 40 ? 40:right;
+		right = right < 5 ? 5:right;
+		buff_bias = buff_bias > 70 ? 70:buff_bias;
+		buff_bias += 0.1;
+		forward(buff_bias,0.6,0,0);
+		if(left < 14 && right < 14) {
+			beep(0);
+			//switch(di){
+			//	case 0 : x--; break;
+			//	case 1 : y--; break;
+			//	case 2 : y++; break;
+			//	case 3 : x++; break;
+			//}
+			count++;
+		}
+	}
+	for(int i = 0 ; i < power_delay ;i++) forward(50,0.5);
+
+	stop_motor();
+}
+
 
 void checkbox(){
-	int counter = 0;
-	int avg_color = 0
+	int avg_color = 0;
 	color = 0;
 	if(seq == 1){
 		stop_motor();
@@ -344,7 +439,7 @@ void findoneandkeepbox(){
 }
 
 void keepbox(){
-	int error = 0 , left = 0 , right = 0;
+	int error = 0;
 	resetMotorEncoder(motorA);
 	resetMotorEncoder(motorD);
 
@@ -358,7 +453,7 @@ void keepbox(){
   two_turn_left();
   stop_motor();
 
-	for(int j = 0 ; j < 37000 ; j++){ //open arm
+	for(int j = 0 ; j < 40000 ; j++){ //open arm
   	setMotorSpeed(motorB, 55);
   }
   setMotorSpeed(motorB, 0);
@@ -373,14 +468,14 @@ void keepbox(){
 		setMotorSpeed(motorD, -30);
   }
   stop_motor();
-  for(int j = 0 ; j < 15000 ; j++){//close aem
+  for(int j = 0 ; j < 19000 ; j++){//close aem
   	setMotorSpeed(motorB, -60);
   }
   setMotorSpeed(motorB, 0);
 
-  for(int i = 0 ; i < 1000 ;i++){
-  	forward(30,0.5);
-  }
+  //for(int i = 0 ; i < 1000 ;i++){
+  //	forward(30,0.5);
+  //}
   stop_motor();
   status = 1;
 
@@ -390,13 +485,17 @@ void keepbox(){
 }
 
 void closearm(){
-	for(int j = 0 ; j < 15000 ; j++){//open arm
+	for(int j = 0 ; j < 19000 ; j++){//open arm
   	setMotorSpeed(motorB, 60);
   }
   setMotorSpeed(motorB, 0);
-  	for(int j = 0 ; j < 37000 ; j++){ //close arm
+  forward_until(1);
+  stop_motor();
+  setMotorSpeed(motorB, 0);
+  for(int j = 0 ; j < 40000 ; j++){ //close arm
   	setMotorSpeed(motorB, -55);
   }
+  setMotorSpeed(motorB, 0);
 }
 
 void prekeep(int bx ,int by){
@@ -467,41 +566,8 @@ void stop_motor(){
 	setMotorSpeed(motorD, 0);
 }
 
-void _open(){
-	for(int n = 0 ; n < 50000 ; n++){
-		setMotorSpeed(motorB, 60);
-	}
-	open_status = 1;
-}
 
-void _close(){
-	for(int n = 0 ; n < 50000 ; n++){
-		setMotorSpeed(motorB, -60);
-	}
-	open_status = 0;
-}
-
-void _handle(){
-	if(open_status){
-
-		setMotorSpeed(motorB, -60);
-		sleep(4000);
-		setMotorSpeed(motorB, 0);
-	}
-	_handle_status = 1;
-}
-
-void _handle(){
-	if(_handle_status){
-
-		setMotorSpeed(motorB, 60);
-		sleep(4000);
-		setMotorSpeed(motorB, 0);
-	}
-	_handle_status = 0;
-}
-
-void forward(int bias , float x){
+void forward(int bias ,float x,float y,float z){
 
 	int pid , error ,last_error , sum_error, left , right = 0;
 	left = SensorValue[S1];
@@ -514,7 +580,8 @@ void forward(int bias , float x){
 	//`if(left == 5 && right == 5) beep(1);
 	error = left - right;
 	sum_error += error;
-	pid = error*(x) + (error-last_error)*3;
+	//displayTextLine(0,"%d",(error-last_error)*5);
+	pid = error*(x) + (error-last_error)*(y) + sum_error*(z);
 	//int buff_bias = 0;
 	//while(bias > buff_bias){
 	//	buff_bias++;
@@ -637,6 +704,13 @@ void printmap(){
 		displayTextLine(i,"%d %d %d %d %d %d %d %d %d %d %d",map[i][0],map[i][1],map[i][2],map[i][3],map[i][4],map[i][5],map[i][6],map[i][7],map[i][8],map[i][9]);
 	}
 }
+
+void printmapfloodfill(){
+	for(int i = 0 ; i < 10 ; i++){
+		displayTextLine(i,"%2d %2d %2d %2d %2d %2d %2d %2d %2d %2d %2d",mapone[i][0],mapone[i][1],mapone[i][2],mapone[i][3],mapone[i][4],mapone[i][5],mapone[i][6],mapone[i][7],mapone[i][8],mapone[i][9]);
+	}
+}
+
 
 void edit_map(){
 	for(int i = 0 ; i < 10 ; i++){
@@ -850,29 +924,33 @@ int min4(int a, int b, int c, int d)
 	}
 }
 
-//////////////////////////////_move to goal
+//////////////////////////////move to goal
 void _move(){
-   int checkw=0;
-   if(checkoor(checkxf(x),checkyf(y))){
+    int checkw=0;
+    if(checkoor(checkxf(x),checkyf(y))){
+        //printf("fwall\n");
         checkw += 1; //front
     }else{
         if (mapone[checkxf(x)][checkyf(y)] == 99 ){
+           // printf("fwall\n");
            checkw += 1; //front
         }
     }
-
     if(checkoor(checkxl(x),checkyl(y))){
+        //printf("lwall\n");
         checkw += 2; //left
     }else{
         if (mapone[checkxl(x)][checkyl(y)] == 99){
+            //printf("lwall\n");
             checkw += 2; //left
         }
     }
-
     if(checkoor(checkxr(x),checkyr(y))){
+        //printf("rwall\n");
         checkw += 4; //right
     }else{
         if (mapone[checkxr(x)][checkyr(y)] == 99){
+            //printf("rwall\n");
             checkw += 4; //right
         }
     }
@@ -883,35 +961,45 @@ void _move(){
             break;
         case 2: min2way(mapone[checkxf(x)][checkyf(y)] , mapone[checkxr(x)][checkyr(y)],2);
             break;
-        case 3:turn_right();forward_until(1);break;
+        case 3:
+            if(status == 0){
+                turn_right();forward_until(1);
+            }
+            else if(status == 1){
+                checkrightbox1(x,y);
+            }
+            // turn_right();
+            break;
         case 4: min2way(mapone[checkxf(x)][checkyf(y)] , mapone[checkxl(x)][checkyl(y)],4);
             break;
-        case 5:turn_left();forward_until(1);break;
+        case 5:
+            if(status == 0){
+                turn_left();forward_until(1);
+            }
+            else if(status == 1){
+                checkleftbox1(x,y);
+            }
+            // turn_left();
+            break;
         case 6:forward_until(1);break;
         default:turn_left();turn_left();forward_until(1);break;
     }
 }
 void min2way(int a, int b,int checkw)
 {
-    int check1=0;
 	if (a <= b)
 	{
 		switch (checkw)
 		{
 		case 1:
-            // if(status = 0){
-            //     turn_left();
-            // }
-            // else if(status = 1){
-            //     check1 = checkleft(x,y);
-            //     switch(check1){
-            //         case 1:turn_left();break;
-            //         case 2:turn_right();turn_right();turn_right();break;
-            //         default:break;
-            //     }
-            // }
-            turn_left();
-            forward_until(1);break; //left,right
+            if(status == 0){
+                turn_left();forward_until(1);
+            }
+            else if(status == 1){
+                checkleftbox1(x,y);
+            }
+            // turn_left();
+            break; //left,right
 		case 2: forward_until(1);break; //front,right
 		default: forward_until(1);break;//front,left
 		}
@@ -920,28 +1008,39 @@ void min2way(int a, int b,int checkw)
 	{
 		switch (checkw)
 		{
-		case 1:	turn_right();forward_until(1);break; //left,right
-		case 2: turn_right();forward_until(1);break; //front,right
+		case 1:
+            if(status == 0){
+                turn_right();forward_until(1);
+            }
+            else if(status == 1){
+                checkrightbox1(x,y);
+            }
+            // turn_right();
+            break; //left,right
+		case 2:
+            if(status == 0){
+                turn_right();forward_until(1);
+            }
+            else if(status == 1){
+                checkrightbox1(x,y);
+            }
+            // turn_right();
+            break; //front,right
 		default:
-            // if(status = 0){
-            //     turn_left();
-            // }
-            // else if(status = 1){
-            //     check1 = checkleft(x,y);
-            //     switch(check1){
-            //         case 1:turn_left();break;
-            //         case 2:turn_right();turn_right();turn_right();break;
-            //         default:break;
-            //     }
-            // }
-            turn_left();
-            forward_until(1);break; //front,left
+            if(status == 0){
+                turn_left();forward_until(1);
+            }
+            else if(status == 1){
+                checkleftbox1(x,y);
+            }
+            // turn_left();
+            break; //front,left
 		}
 	}
 }
 void min3way(int a, int b, int c)
 { //front,left,right
-    int check1=0;
+
 	if (a != b && a != c && b != c)
 	{
 		if (a < b && a < c)
@@ -950,23 +1049,25 @@ void min3way(int a, int b, int c)
 		}
 		else if (b < a && b < c)
 		{ //go left
-			// if(status = 0){
-            //     turn_left();
-            // }
-            // else if(status = 1){
-            //     check1 = checkleft(x,y);
-            //     switch(check1){
-            //         case 1:turn_left();break;
-            //         case 2:turn_right();turn_right();turn_right();break;
-            //         default:break;
-            //     }
-            // }
-            turn_left();
-            forward_until(1);
+			if(status == 0){
+                turn_left();forward_until(1);
+            }
+            else if(status == 1){
+                checkleftbox1(x,y);
+            }
+            // turn_left();
+
 		}
 		else
 		{ //go right
-			turn_right();forward_until(1);
+			if(status == 0){
+                turn_right();forward_until(1);
+            }
+            else if(status == 1){
+                checkrightbox1(x,y);
+            }
+            // turn_right();
+
 		}
 	}
 	else
@@ -975,6 +1076,7 @@ void min3way(int a, int b, int c)
 	}
 }
 
+////////////////////////////// north east west
 //front
 int checkxf(int x){
     switch(di){
@@ -1026,55 +1128,180 @@ int checkyr(int y){
         default: return y-1;
     }
 }
-
-int checkleft(int x, int y){
+//back
+int checkxb(int x){
     switch(di){
-        case 0:
-            if(mapone[x][y+1] == 1 && mapone[x+1][y+1] == 1){
-                return 1;
-            }else if(mapone[x][y+1] == 1 && mapone[x-1][y+1] == 1 &&
-                    mapone[x-1][y] == 1 && mapone[x-1][y-1] == 1 &&
-                    mapone[x][y-1] == 1 && mapone[x+1][y-1] == 1){
-                return 2;
-            }else{
-                return 3;
-            }
-            break;
-        case 1:
-            if(mapone[x-1][y] == 1 && mapone[x-1][y+1] == 1){
-                return 1;
-            }else if(mapone[x-1][y] == 1 && mapone[x-1][y-1] == 1 &&
-                    mapone[x][y-1] == 1 && mapone[x+1][y-1] == 1 &&
-                    mapone[x+1][y] == 1 && mapone[x+1][y+1] == 1){
-                return 2;
-            }else{
-                return 3;
-            }
-            break;
-        case 2:
-            if(mapone[x+1][y] == 1 && mapone[x+1][y-1] == 1){
-                return 1;
-            }else if(mapone[x+1][y] == 1 && mapone[x+1][y+1] == 1 &&
-                    mapone[x][y+1] == 1 && mapone[x-1][y+1] == 1 &&
-                    mapone[x-1][y] == 1 && mapone[x-1][y-1] == 1){
-                return 2;
-            }else{
-                return 3;
-            }
-            break;
-        default:
-            if(mapone[x-1][y-1] == 1 && mapone[x][y-1] == 1){
-                return 1;
-            }else if(mapone[x][y-1] == 1 && mapone[x+1][y-1] == 1 &&
-                    mapone[x+1][y] == 1 && mapone[x+1][y+1] == 1 &&
-                    mapone[x][y+1] == 1 && mapone[x-1][y+1] == 1){
-                return 2;
-            }else{
-                return 3;
-            }
-            break;
-
+        case 0: return x+1;
+        case 1: return x;
+        case 2: return x;
+        default: return x-1;
     }
+}
+int checkyb(int y){
+    switch(di){
+        case 0: return y;
+        case 1: return y+1;
+        case 2: return y-1;
+        default: return y;
+    }
+}
+////////////////////////////// ne nw be bw
+//northeast
+int checkxne(int x){
+    switch(di){
+        case 0: return x-1;
+        case 1: return x+1;
+        case 2: return x-1;
+        default: return x+1;
+    }
+}
+int checkyne(int y){
+    switch(di){
+        case 0: return y-1;
+        case 1: return y-1;
+        case 2: return y+1;
+        default: return y+1;
+    }
+}
+//northwest
+int checkxnw(int x){
+    switch(di){
+        case 0: return x-1;
+        case 1: return x-1;
+        case 2: return x+1;
+        default: return x+1;
+    }
+}
+int checkynw(int y){
+    switch(di){
+        case 0: return y+1;
+        case 1: return y-1;
+        case 2: return y+1;
+        default: return y-1;
+    }
+}
 
+//southeast
+int checkxse(int x){
+    switch(di){
+        case 0: return x+1;
+        case 1: return x+1;
+        case 2: return x-1;
+        default: return x-1;
+    }
+}
+int checkyse(int y){
+    switch(di){
+        case 0: return y-1;
+        case 1: return y+1;
+        case 2: return y-1;
+        default: return y+1;
+    }
+}
+//southwest
+int checkxsw(int x){
+    switch(di){
+        case 0: return x+1;
+        case 1: return x-1;
+        case 2: return x+1;
+        default: return x-1;
+    }
+}
+int checkysw(int y){
+    switch(di){
+        case 0: return y+1;
+        case 1: return y+1;
+        case 2: return y-1;
+        default: return y-1;
+    }
+}
+//turn car to box
+void prekeep(int bx ,int by){
+    if(checkxf(x) == bx && checkyf(y) == by){
+    }else if(checkxl(x) == bx && checkyl(y) == by){
+        turn_left();
+    }else if(checkxr(x) == bx && checkyr(y) == by){
+        turn_right();
+    }else{
+        turn_left();
+        turn_left();
+    }
+}
+//turn with box1
+void checkleftbox1(int x, int y){
+    //printf("left\n");
+    if(checkoor(checkxr(x),checkyr(y)) && checkoor(checkxsw(x),checkysw(y))){
+        turn_left();
+    }
+    else{
+        if(checkoor(checkxsw(x),checkysw(y))){ //sw oor
+            if(mapone[checkxr(x)][checkyr(y)] != 99){
+                turn_left();
+            }
+        }else {
+            if(mapone[checkxr(x)][checkyr(y)] != 99 && mapone[checkxsw(x)][checkysw(y)] != 99){
+                turn_left();
+            }else if(mapone[checkxr(x)][checkyr(y)] != 99 &&  mapone[checkxnw(x)][checkynw(y)] != 99 &&
+                        mapone[checkxf(x)][checkyf(y)] != 99 && mapone[checkxne(x)][checkyne(y)] != 99 &&
+                        mapone[checkxl(x)][checkyl(y)] != 99 && mapone[checkxse(x)][checkyse(y)] != 99 ){
+                turn_right();turn_right();turn_right();
+            }
+            /*else if((mapone[checkxne(x)][checkyne(y)] == 99 && mapone[checkxnw(x)][checkynw(y)] == 99 &&
+                        mapone[checkxse(x)][checkyse(y)] == 99 && mapone[checkxsw(x)][checkysw(y)] == 99 ) &&
+                        mapone[checkxf(x)][checkyf(y)] == 99 || mapone[checkxl(x)][checkyl(y)] == 99 || mapone[checkxr(x)][checkyr(y)] == 99){
+                printf("Release box");
+                status=0;
+                turn_left();turn_left();
+                forward_until(1);forward_until(1);
+                printf("Keep box");
+                status=1;
+                turn_left();
+            }*/
+            else{
+                forward_until(1);
+            }
+
+        }
+    }
+}
+
+void checkrightbox1(int x, int y){
+    //printf("right\n");
+    if(checkoor(checkxl(x),checkyl(y)) && checkoor(checkxse(x),checkyse(y))){
+        turn_right();
+    }
+    else{
+        if(checkoor(checkxse(x),checkyse(y))){ //sw oor
+            if(mapone[checkxl(x)][checkyl(y)] != 99){
+                turn_right();
+            }
+        }else{
+            if(mapone[checkxl(x)][checkyl(y)] != 99 && mapone[checkxse(x)][checkyse(y)] != 99){
+
+                turn_right();
+            }else if(mapone[checkxl(x)][checkyl(y)] != 99 &&  mapone[checkxnw(x)][checkynw(y)] != 99 &&
+                        mapone[checkxf(x)][checkyf(y)] != 99 && mapone[checkxne(x)][checkyne(y)] != 99 &&
+                        mapone[checkxr(x)][checkyr(y)] != 99 && mapone[checkxsw(x)][checkysw(y)] != 99 ){
+                turn_left();turn_left();turn_left();
+
+            }
+            /*else if((mapone[checkxne(x)][checkyne(y)] == 99 && mapone[checkxnw(x)][checkynw(y)] == 99 &&
+                        mapone[checkxse(x)][checkyse(y)] == 99 && mapone[checkxsw(x)][checkysw(y)] == 99 ) &&
+                        mapone[checkxf(x)][checkyf(y)] == 99 || mapone[checkxl(x)][checkyl(y)] == 99 || mapone[checkxr(x)][checkyr(y)] == 99){
+                printf("Release box");
+                status=0;
+                turn_left();turn_left();
+                forward_until(1);forward_until(1);
+                printf("Keep box");
+                status=1;
+                turn_right();
+            }*/
+            else{
+                //printf("*\n");
+                forward_until(1);
+            }
+
+        }
+    }
 
 }
