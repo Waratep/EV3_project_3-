@@ -228,6 +228,7 @@ void _init_(){
 			counter = 1;
 			point++;
 			angle++;
+			buff_bias = 0;
 		}
 
 		if(left < 14 && right < 14) {
@@ -253,6 +254,7 @@ void _init_(){
 				stop_motor();
 			}
 			point++;
+			buff_bias = 0;
 		}
 
 	}
