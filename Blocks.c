@@ -10,9 +10,10 @@
 
 #define power_turn 40
 #define power_delay 250
-#define color_define 25
+#define color_define 28
 #define turn_delay 5000
 #define two_turn_delay 10000
+#define delay_color 3000
 
 void beep(int i);
 void check_font_block(float sensor);
@@ -125,6 +126,7 @@ task main()
 	edit_map();
 	printmap();
 	sleep(5000);
+	findoneandkeepbox();
 
 
 }
@@ -211,11 +213,13 @@ void forward_until(int point){
 
 void checkbox(){
 	int counter = 0;
-	float avg_color = 0
+	int avg_color = 0
+	color = 0;
 	if(seq == 1){
 		stop_motor();
-		for(int i = 0; i < 2000 ; i++){
+		for(int i = 0; i < delay_color ; i++){
 			avg_color = SensorValue[S3];
+			displayTextLine(11,"%d",avg_color);
 		}
 		if(avg_color >= color_define && SensorValue[S2] < 15){
 				color = 6; // orange
@@ -235,7 +239,7 @@ void checkbox(){
 	}else if(seq == 2){
 		stop_motor();
 		forward_until(1);
-		for(int i = 0; i < 2000 ; i++){
+		for(int i = 0; i < delay_color ; i++){
 			avg_color = SensorValue[S3];
 		}
 		if(avg_color >= color_define && SensorValue[S2] < 15){
@@ -258,7 +262,7 @@ void checkbox(){
 	}else if(seq == 3){
 		stop_motor();
 		forward_until(2);
-		for(int i = 0; i < 2000 ; i++){
+		for(int i = 0; i < delay_color ; i++){
 			avg_color = SensorValue[S3];
 		}
 		if(avg_color >= color_define && SensorValue[S2] < 15){
@@ -281,7 +285,7 @@ void checkbox(){
 	}else if(seq == 4){
 		stop_motor();
 		forward_until(3);
-		for(int i = 0; i < 2000 ; i++){
+		for(int i = 0; i < delay_color ; i++){
 			avg_color = SensorValue[S3];
 		}
 		if(avg_color >= color_define && SensorValue[S2] < 15){
@@ -339,12 +343,19 @@ void findoneandkeepbox(){
   stop_motor();
   two_turn_left();
   stop_motor();
-  _open();
+	for(int j = 0 ; j < 32000 ; j++){
+  	setMotorSpeed(motorB, 60);
+  }
+  setMotorSpeed(motorB, 0);
   for(int j = 0 ; j < 10000 ; j++){
   	setMotorSpeed(motorA, -30);
 		setMotorSpeed(motorD, -30);
   }
-  _handle();
+  stop_motor();
+  for(int j = 0 ; j < 14000 ; j++){
+  	setMotorSpeed(motorB, -60);
+  }
+  setMotorSpeed(motorB, 0);
 
   status = 1;
 
