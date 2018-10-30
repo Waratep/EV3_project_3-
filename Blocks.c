@@ -16,7 +16,7 @@
 #define delay_color 3000
 
 void beep(int i);
-void forward(int bias ,float x,float y,float z);
+void forward(int bias ,float x);
 void turn_left();
 void two_turn_left();
 void turn_right();
@@ -31,7 +31,8 @@ void findoneandkeepbox();
 void keepbox();
 void closearm();
 int seq = 0;
-int six = 0,nine = 0,color = 0;
+int six = 0,nine = 0,color = 0,sum_error = 0;
+float last_error=0;
 
 
 //////////////////////////
@@ -150,7 +151,7 @@ task main()
 	//_init_();
 
 	//while(1){
-	//	forward(70,0.5,5,0.0005);
+	//	forward(70,0.6);
 	//}
 	x = 9;
 	y = 9;
@@ -215,7 +216,7 @@ void _init_(){
 		right = right < 5 ? 5:right;
 		buff_bias = buff_bias > 70 ? 70:buff_bias;
 		buff_bias += 0.05;
-		forward(buff_bias,0.6,5,0.0005);
+		forward(buff_bias,0.6);
 		if(counter == 10){
 			//for(int i = 0 ; i < 300 ;i++) forward(50,0.5);
 			buff_bias = 0;
@@ -264,7 +265,7 @@ void forward_until(int point){
 		right = right < 5 ? 5:right;
 		buff_bias = buff_bias > 70 ? 70:buff_bias;
 		buff_bias += 0.1;
-		forward(buff_bias,0.6,0,0);
+		forward(buff_bias,0.6);
 		if(left < 14 && right < 14) {
 			beep(0);
 			switch(di){
@@ -293,7 +294,7 @@ void forward_until_noxy(int point){
 		right = right < 5 ? 5:right;
 		buff_bias = buff_bias > 70 ? 70:buff_bias;
 		buff_bias += 0.1;
-		forward(buff_bias,0.6,0,0);
+		forward(buff_bias,0.6);
 		if(left < 14 && right < 14) {
 			beep(0);
 			//switch(di){
@@ -567,21 +568,20 @@ void stop_motor(){
 }
 
 
-void forward(int bias ,float x,float y,float z){
+void forward(int bias ,float x){
 
-	int pid , error ,last_error , sum_error, left , right = 0;
+	float pid , error  , left , right = 0;
 	left = SensorValue[S1];
 	right = SensorValue[S4];
 	left = left > 40 ? 40:left;
 	left = left < 5 ? 5:left;
 	right = right > 40 ? 40:right;
 	right = right < 5 ? 5:right;
-	last_error = error;
 	//`if(left == 5 && right == 5) beep(1);
 	error = left - right;
 	sum_error += error;
-	//displayTextLine(0,"%d",(error-last_error)*5);
-	pid = error*(x) + (error-last_error)*(y) + sum_error*(z);
+	displayTextLine(0,"%f  %f  %f",error*x,(error-last_error)*(3.5),sum_error*(0.0012));
+	pid = error*(x) + (error-last_error)*(3.5) + sum_error*(0.0012);
 	//int buff_bias = 0;
 	//while(bias > buff_bias){
 	//	buff_bias++;
@@ -591,6 +591,7 @@ void forward(int bias ,float x,float y,float z){
 	//}
 	setMotorSpeed(motorA, bias+pid);
 	setMotorSpeed(motorD, bias+pid*(-1));
+	last_error = error;
 
 }
 
