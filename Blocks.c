@@ -991,29 +991,29 @@ int min4(int a, int b, int c, int d)
 void _move(){
     int checkw=0;
     if(checkoor(checkxf(x),checkyf(y))){
-        //printf("fwall\n");
+        //printf("fwall ");
         checkw += 1; //front
     }else{
         if (mapone[checkxf(x)][checkyf(y)] == 99 ){
-           // printf("fwall\n");
+            //printf("fwall ");
            checkw += 1; //front
         }
     }
     if(checkoor(checkxl(x),checkyl(y))){
-        //printf("lwall\n");
+        //printf("lwall ");
         checkw += 2; //left
     }else{
         if (mapone[checkxl(x)][checkyl(y)] == 99){
-            //printf("lwall\n");
+            //printf("lwall ");
             checkw += 2; //left
         }
     }
     if(checkoor(checkxr(x),checkyr(y))){
-        //printf("rwall\n");
+        //printf("rwall ");
         checkw += 4; //right
     }else{
         if (mapone[checkxr(x)][checkyr(y)] == 99){
-            //printf("rwall\n");
+            //printf("rwall ");
             checkw += 4; //right
         }
     }
@@ -1026,7 +1026,7 @@ void _move(){
             break;
         case 3:
             if(status == 0){
-                turn_right();forward_until(1);
+                turn_right();turn_left();
             }
             else if(status == 1){
                 checkrightbox1(x,y);
