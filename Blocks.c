@@ -10,12 +10,14 @@
 
 #define power_turn 40
 #define power_delay 100
-#define power_delay2 250
+#define power_delay2 300
 #define color_define 28
 #define turn_delay 5000
 #define two_turn_delay 10000
 #define delay_color 3000
 
+void disbox();
+void undisbox();
 void beep(int i);
 void forward(int bias ,float x);
 void turn_left();
@@ -34,7 +36,7 @@ void closearm();
 int seq = 0;
 int six = 0,nine = 0,color = 0,sum_error = 0,enable_delay = 0;
 float last_error=0;
-
+float buffdisbox = 0;
 
 //////////////////////////
 
@@ -109,35 +111,35 @@ int checkdiplace(); //check position between car and place
 void preplace1();
 
 
-//int map[][] =
-//{   //0 1 2 3 4 5 6 7 8 9
-//	{1,1,1,1,1, 1,1,1,1,1},//0
-//	{1,0,0,0,0, 0,0,0,0,1},//1
-//	{1,0,0,0,0, 0,0,0,0,1},//2
-//	{1,0,0,0,0, 0,0,0,0,1},//3
-//	{1,0,0,0,0, 0,0,0,0,1},//4
-
-//	{1,0,0,0,0, 0,0,0,0,1},//5
-//	{1,0,0,0,0, 0,0,0,0,1},//6
-//	{1,0,0,0,0, 0,0,0,0,1},//7
-//	{1,0,0,0,0, 0,0,0,0,1},//8
-//	{1,1,1,1,1, 1,1,1,1,1} //9
-//};
-
 int map[][] =
 {   //0 1 2 3 4 5 6 7 8 9
 	{1,1,1,1,1, 1,1,1,1,1},//0
-	{1,1,6,6,1, 1,1,1,1,1},//1
-	{1,1,1,1,1, 9,1,9,1,1},//2
-	{1,1,1,1,1, 1,1,6,1,1},//3
-	{1,1,1,1,1, 1,1,1,1,1},//4
+	{1,0,0,0,0, 0,0,0,0,1},//1
+	{1,0,0,0,0, 0,0,0,0,1},//2
+	{1,0,0,0,0, 0,0,0,0,1},//3
+	{1,0,0,0,0, 0,0,0,0,1},//4
 
-	{1,1,1,1,1, 9,1,1,1,1},//5
-	{1,6,9,1,1, 1,1,1,1,1},//6
-	{1,1,1,1,1, 1,1,1,1,1},//7
-	{1,1,1,1,1, 1,1,1,1,1},//8
+	{1,0,0,0,0, 0,0,0,0,1},//5
+	{1,0,0,0,0, 0,0,0,0,1},//6
+	{1,0,0,0,0, 0,0,0,0,1},//7
+	{1,0,0,0,0, 0,0,0,0,1},//8
 	{1,1,1,1,1, 1,1,1,1,1} //9
 };
+
+//int map[][] =
+//{   //0 1 2 3 4 5 6 7 8 9
+//	{1,1,1,1,1, 1,1,1,1,1},//0
+//	{1,1,6,6,1, 1,1,1,1,1},//1
+//	{1,1,1,1,1, 9,1,9,1,1},//2
+//	{1,1,1,1,1, 1,1,6,1,1},//3
+//	{1,1,1,1,1, 1,1,1,1,1},//4
+
+//	{1,1,1,1,1, 9,1,1,1,1},//5
+//	{1,6,9,1,1, 1,1,1,1,1},//6
+//	{1,1,1,1,1, 1,1,1,1,1},//7
+//	{1,1,1,1,1, 1,1,1,1,1},//8
+//	{1,1,1,1,1, 1,1,1,1,1} //9
+//};
 
 
 int mapone[10][10] =  //changemap at
@@ -159,14 +161,10 @@ int mapone[10][10] =  //changemap at
 task main()
 {
 
-	//enable_delay = 0;
-	//_init_();
- // edit_map();
-	//enable_delay = 1;
-	////while(1){
-	//	forward(70,0.6);
-	//}
-
+	enable_delay = 0;
+	_init_();
+  edit_map();
+	enable_delay = 1;
 
 	x = 9;
 	y = 9;
@@ -187,6 +185,8 @@ task main()
   findgoalboxsmall();
   printmapfloodfill();
 
+	//disbox();
+	//undisbox();
 
 	//bx = 1;
 	//by = 7;
@@ -353,12 +353,31 @@ void forward_until_noxy(int point){
 	stop_motor();
 }
 
+void disbox(){
+	buffdisbox = SensorValue[S2];
+	if(SensorValue[S2] < 15){
+		while(SensorValue[S2] > 3){
+			setMotorSpeed(motorA,(SensorValue[S2]-3)*3);
+			setMotorSpeed(motorD,(SensorValue[S2]-3)*3);
+		}
+	}
+	stop_motor();
+}
+void undisbox(){
+
+	while(SensorValue[S2] < buffdisbox){
+		setMotorSpeed(motorA,(3-SensorValue[S2])*3);
+		setMotorSpeed(motorD,(3-SensorValue[S2])*3);
+	}
+	stop_motor();
+}
 
 void checkbox(){
 	int avg_color = 0;
 	color = 0;
 	if(seq == 1){
 		stop_motor();
+		disbox();
 		for(int i = 0; i < delay_color ; i++){
 			avg_color = SensorValue[S3];
 			displayTextLine(11,"%d",avg_color);
@@ -377,10 +396,12 @@ void checkbox(){
 							else if(map[checkx(x,1)][checky(y,1)] == 9){map[checkx(x,1)][checky(y,1)] = 9;}
 							else{map[checkx(x,1)][checky(y,1)] = 1;} break;
 		}
+		undisbox();
 		turn_right();
 	}else if(seq == 2){
 		stop_motor();
 		forward_until(1);
+		disbox();
 		for(int i = 0; i < delay_color ; i++){
 			avg_color = SensorValue[S3];
 		}
@@ -398,12 +419,14 @@ void checkbox(){
 							else if(map[checkx(x,1)][checky(y,1)] == 9){map[checkx(x,1)][checky(y,1)] = 9;}
 							else{map[checkx(x,1)][checky(y,1)] = 1;} break;
 		}
+		undisbox();
 		two_turn_left();
 		forward_until(1);
 		turn_left();
 	}else if(seq == 3){
 		stop_motor();
 		forward_until(2);
+		disbox();
 		for(int i = 0; i < delay_color ; i++){
 			avg_color = SensorValue[S3];
 		}
@@ -421,12 +444,14 @@ void checkbox(){
 							else if(map[checkx(x,1)][checky(y,1)] == 9){map[checkx(x,1)][checky(y,1)] = 9;}
 							else{map[checkx(x,1)][checky(y,1)] = 1;} break;
 		}
+		undisbox();
 		two_turn_left();
 		forward_until(2);
 		turn_left();
 	}else if(seq == 4){
 		stop_motor();
 		forward_until(3);
+		disbox();
 		for(int i = 0; i < delay_color ; i++){
 			avg_color = SensorValue[S3];
 		}
@@ -444,6 +469,7 @@ void checkbox(){
 							else if(map[checkx(x,1)][checky(y,1)] == 9){map[checkx(x,1)][checky(y,1)] = 9;}
 							else{map[checkx(x,1)][checky(y,1)] = 1;} break;
 		}
+		undisbox();
 		two_turn_left();
 		forward_until(3);
 		turn_left();
