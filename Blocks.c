@@ -11,7 +11,7 @@
 #define power_turn 40
 #define power_delay 100
 #define power_delay2 300
-#define color_define 28
+#define color_define 35
 #define turn_delay 5000
 #define two_turn_delay 10000
 #define delay_color 3000
@@ -160,7 +160,7 @@ int mapone[10][10] =  //changemap at
 
 task main()
 {
-
+		//backward();
 	enable_delay = 0;
 	_init_();
   edit_map();
@@ -185,11 +185,7 @@ task main()
   findgoalboxsmall();
   printmapfloodfill();
 
-	//disbox();
-	//undisbox();
 
-	//bx = 1;
-	//by = 7;
 
  // for(int i=0;i<20;i++){
  //    changeone(bx,by);
@@ -366,8 +362,8 @@ void disbox(){
 void undisbox(){
 
 	while(SensorValue[S2] < buffdisbox){
-		setMotorSpeed(motorA,(3-SensorValue[S2])*3);
-		setMotorSpeed(motorD,(3-SensorValue[S2])*3);
+		setMotorSpeed(motorA,(3-SensorValue[S2])*5);
+		setMotorSpeed(motorD,(3-SensorValue[S2])*5);
 	}
 	stop_motor();
 }
@@ -396,7 +392,7 @@ void checkbox(){
 							else if(map[checkx(x,1)][checky(y,1)] == 9){map[checkx(x,1)][checky(y,1)] = 9;}
 							else{map[checkx(x,1)][checky(y,1)] = 1;} break;
 		}
-		undisbox();
+		//undisbox();
 		turn_right();
 	}else if(seq == 2){
 		stop_motor();
@@ -419,7 +415,7 @@ void checkbox(){
 							else if(map[checkx(x,1)][checky(y,1)] == 9){map[checkx(x,1)][checky(y,1)] = 9;}
 							else{map[checkx(x,1)][checky(y,1)] = 1;} break;
 		}
-		undisbox();
+		//undisbox();
 		two_turn_left();
 		forward_until(1);
 		turn_left();
@@ -444,7 +440,7 @@ void checkbox(){
 							else if(map[checkx(x,1)][checky(y,1)] == 9){map[checkx(x,1)][checky(y,1)] = 9;}
 							else{map[checkx(x,1)][checky(y,1)] = 1;} break;
 		}
-		undisbox();
+		//undisbox();
 		two_turn_left();
 		forward_until(2);
 		turn_left();
@@ -469,7 +465,7 @@ void checkbox(){
 							else if(map[checkx(x,1)][checky(y,1)] == 9){map[checkx(x,1)][checky(y,1)] = 9;}
 							else{map[checkx(x,1)][checky(y,1)] = 1;} break;
 		}
-		undisbox();
+		//undisbox();
 		two_turn_left();
 		forward_until(3);
 		turn_left();
@@ -736,7 +732,14 @@ void beep(int i) {
 }
 
 void backward(){
-
+	resetMotorEncoder(motorA);
+	resetMotorEncoder(motorD);
+	while(getMotorEncoder(motorA) < 650 && getMotorEncoder(motorD) < 650){
+		int error = (-0.07)*(650 - getMotorEncoder(motorA));
+		error = error > -15 ? -15:error;
+		setMotorSpeed(motorA,error);
+		setMotorSpeed(motorD,error);
+	}
 	stop_motor();
 
 }
@@ -994,29 +997,29 @@ int min4(int a, int b, int c, int d)
 void _move(){
     int checkw=0;
     if(checkoor(checkxf(x),checkyf(y))){
-        //printf("fwall ");
+        ////printf("fwall ");
         checkw += 1; //front
     }else{
         if (mapone[checkxf(x)][checkyf(y)] == 99 ){
-            //printf("fwall ");
+            ////printf("fwall ");
            checkw += 1; //front
         }
     }
     if(checkoor(checkxl(x),checkyl(y))){
-        //printf("lwall ");
+        ////printf("lwall ");
         checkw += 2; //left
     }else{
         if (mapone[checkxl(x)][checkyl(y)] == 99){
-            //printf("lwall ");
+            ////printf("lwall ");
             checkw += 2; //left
         }
     }
     if(checkoor(checkxr(x),checkyr(y))){
-        //printf("rwall ");
+        ////printf("rwall ");
         checkw += 4; //right
     }else{
         if (mapone[checkxr(x)][checkyr(y)] == 99){
-            //printf("rwall ");
+            ////printf("rwall ");
             checkw += 4; //right
         }
     }
@@ -1298,7 +1301,8 @@ void checkleftbox1(int x, int y){
     ///*
     if( checkoor(checkxr(x),checkyr(y)) ){
         turn_left();
-    }else{
+    }
+    else{
         if(mapone[checkxr(x)][checkyr(y)] != 99){
             if(mapone[checkxsw(x)][checkysw(y)] != 99){
                 turn_left();
@@ -1308,9 +1312,11 @@ void checkleftbox1(int x, int y){
                         if(mapone[checkxl(x)][checkyl(y)] != 99 && mapone[checkxse(x)][checkyse(y)] != 99){
                             turn_right();turn_right();turn_right();
                         }else{
+                            mapone[x][y] = 98;
                             backward();
                         }
                     }else{
+                        mapone[x][y] = 98;
                         backward();
                     }
 
@@ -1320,9 +1326,15 @@ void checkleftbox1(int x, int y){
                             if(mapone[checkxl(x)][checkyl(y)] != 99 && mapone[checkxne(x)][checkyne(y)] != 99 && mapone[checkxnw(x)][checkynw(y)] != 99){
                                 turn_right();turn_right();turn_right();
                             }else{
-                                forward_until(1);
+                                if(mapone[checkxf(x)][checkyf(y)] != 98){
+                                    forward_until(1);
+                                }else{
+                                    mapone[x][y] = 98;
+                                    backward();
+                                }
                             }
                         }else{
+                            mapone[x][y] = 98;
                             backward();
                         }
                     }else{
@@ -1330,9 +1342,15 @@ void checkleftbox1(int x, int y){
                             if(mapone[checkxl(x)][checkyl(y)] != 99 && mapone[checkxne(x)][checkyne(y)] != 99 && mapone[checkxnw(x)][checkynw(y)] != 99 && mapone[checkxse(x)][checkyse(y)] != 99){
                                 turn_right();turn_right();turn_right();
                             }else{
-                                forward_until(1);
+                                if(mapone[checkxf(x)][checkyf(y)] != 98){
+                                    forward_until(1);
+                                }else{
+                                    mapone[x][y] = 98;
+                                    backward();
+                                }
                             }
                         }else{
+                            mapone[x][y] = 98;
                             backward();
                         }
 
@@ -1341,64 +1359,33 @@ void checkleftbox1(int x, int y){
             }
         }else{
             if( checkoor(checkxf(x),checkyf(y)) ){
-               backward();
+                mapone[x][y] =98;
+                backward();
             }else{
                 if( checkoor(checkxb(x),checkyb(y)) ){
-                   if(mapone[checkxf(x)][checkyf(y)] != 99){
-                       forward_until(1);
-                   }else{
-                       backward();
-                   }
+                    if(mapone[checkxf(x)][checkyf(y)] != 98){
+                            forward_until(1);
+                        }else{
+                            mapone[x][y] =98;
+                            backward();
+                        }
                 }else{
                     if(mapone[checkxf(x)][checkyf(y)] != 99){
-                       forward_until(1);
+                       if(mapone[checkxf(x)][checkyf(y)] != 98){
+                            forward_until(1);
+                            //printf("WTFF1");
+                        }else{
+                            mapone[x][y] =98;
+                            backward();
+                        }
                     }else{
-                       backward();
+                        mapone[x][y] = 98;
+                        backward();
                     }
                 }
            }
         }
     }
-    //*/
-
-    //printf("left\n");
-    /*
-    if( checkoor(checkxr(x),checkyr(y)) ){
-        turn_left();
-    }else{
-        if(mapone[checkxr(x)][checkyr(y)] != 99){
-            if( checkoor(checkxb(x),checkyb(y)) ){
-                turn_left();
-            }else{
-                if(mapone[checkxsw(x)][checkysw(y)] != 99){
-                    turn_left();
-                }else{
-                    if( checkoor(checkxf(x),checkyf(y)) &&  checkoor(checkxl(x),checkyl(y))){
-                        turn_right();turn_right();turn_right();
-                    }else{
-                        if( checkoor(checkxf(x),checkyf(y)) ){
-                            if( mapone[checkxl(x)][checkyl(y)] != 99 && mapone[checkxse(x)][checkyse(y)] != 99 ){
-                                turn_right();turn_right();turn_right();
-                            }else{
-                                forward_until(1);
-                            }
-                        }else if( checkoor(checkxl(x),checkyl(y)) ){
-                            if( mapone[checkxf(x)][checkyf(y)] != 99 && mapone[checkxnw(x)][checkynw(y)] != 99 ){
-                                turn_right();turn_right();turn_right();
-                            }else if( mapone[checkxnw(x)][checkynw(y)] != 99 ){
-                                forward_until(1);
-                            }else{
-                                backward();backward();
-                            }
-                        }
-                    }
-                }
-            }
-        }else{
-            forward_until(1);
-        }
-    }
-    //*/
 }
 
 void checkrightbox1(int x, int y){
@@ -1414,9 +1401,11 @@ void checkrightbox1(int x, int y){
                         if(mapone[checkxl(x)][checkyl(y)] != 99 && mapone[checkxse(x)][checkyse(y)] != 99){
                             turn_left();turn_left();turn_left();
                         }else{
+                            mapone[x][y] = 98;
                             backward();
                         }
                     }else{
+                        mapone[x][y] = 98;
                         backward();
                     }
 
@@ -1426,9 +1415,15 @@ void checkrightbox1(int x, int y){
                             if(mapone[checkxr(x)][checkyr(y)] != 99 && mapone[checkxne(x)][checkyne(y)] != 99 && mapone[checkxnw(x)][checkynw(y)] != 99){
                                 turn_left();turn_left();turn_left();
                             }else{
-                                forward_until(1);
+                                if(mapone[checkxf(x)][checkyf(y)] != 98){
+                                    forward_until(1);
+                                }else{
+                                    mapone[x][y] = 98;
+                                    backward();
+                                }
                             }
                         }else{
+                            mapone[x][y] = 98;
                             backward();
                         }
                     }else{
@@ -1436,9 +1431,15 @@ void checkrightbox1(int x, int y){
                             if(mapone[checkxr(x)][checkyr(y)] != 99 && mapone[checkxne(x)][checkyne(y)] != 99 && mapone[checkxnw(x)][checkynw(y)] != 99 && mapone[checkxsw(x)][checkysw(y)] != 99){
                                 turn_left();turn_left();turn_left();
                             }else{
-                                forward_until(1);
+                                if(mapone[checkxf(x)][checkyf(y)] != 98){
+                                    forward_until(1);
+                                }else{
+                                    mapone[x][y] = 98;
+                                    backward();
+                                }
                             }
                         }else{
+                            mapone[x][y] = 98;
                             backward();
                         }
 
@@ -1447,62 +1448,102 @@ void checkrightbox1(int x, int y){
             }
         }else{
             if( checkoor(checkxf(x),checkyf(y)) ){
-               backward();
+                mapone[x][y] = 98;
+                backward();
             }else{
                 if( checkoor(checkxb(x),checkyb(y)) ){
                    if(mapone[checkxf(x)][checkyf(y)] != 99){
-                       forward_until(1);
+                       if(mapone[checkxf(x)][checkyf(y)] != 98){
+                            forward_until(1);
+                        }else{
+                            mapone[x][y] = 98;
+                            backward();
+                        }
                    }else{
+                       mapone[x][y] = 98;
                        backward();
                    }
                 }else{
                     if(mapone[checkxf(x)][checkyf(y)] != 99){
-                       forward_until(1);
+                       if(mapone[checkxf(x)][checkyf(y)] != 98){
+                            forward_until(1);
+                        }else{
+                            mapone[x][y] = 98;
+                            backward();
+                        }
                     }else{
-                       backward();
+                        mapone[x][y] = 98;
+                        backward();
                     }
                 }
            }
         }
     }
-        //printf("left\n");
-    /*
-    if( checkoor(checkxl(x),checkyl(y)) ){ //oorl
-        turn_right();
-    }else{
-        if(mapone[checkxl(x)][checkyl(y)] != 99){
-            if( checkoor(checkxb(x),checkyb(y)) ){
-                turn_right();
+}
+
+void checkbackbox1(int x,int y){
+    if( checkoor(checkxf(x),checkyf(y)) ){
+        if( checkoor(checkxr(x),checkyr(y)) ){
+            turn_left();turn_left();
+        }else if( checkoor(checkxl(x),checkyl(y)) ){
+            turn_right();turn_right();
+        }else{
+            if(mapone[checkxr(x)][checkyr(y)] != 99 && mapone[checkxsw(x)][checkysw(y)] != 99){
+                turn_left();turn_left();
+            }
+            else if(mapone[checkxl(x)][checkyl(y)] != 99 && mapone[checkxse(x)][checkyse(y)] != 99){
+                turn_right();turn_right();
             }else{
-                if(mapone[checkxse(x)][checkyse(y)] != 99){
-                    turn_right();
+                mapone[x][y] = 98;
+                backward();
+            }
+        }
+    }
+    else if( checkoor(checkxb(x),checkyb(y)) ){
+        if(mapone[checkxf(x)][checkyf(y)] != 99){
+           if( checkoor(checkxr(x),checkyr(y)) ){
+                turn_left();turn_left();
+            }else if( checkoor(checkxl(x),checkyl(y)) ){
+                turn_right();turn_right();
+            }else{
+                if(mapone[checkxr(x)][checkyr(y)] != 99 && mapone[checkxnw(x)][checkynw(y)] != 99){
+                    turn_left();turn_left();
+                }
+                else if(mapone[checkxl(x)][checkyl(y)] != 99 && mapone[checkxne(x)][checkyne(y)] != 99){
+                    turn_right();turn_right();
                 }else{
-                    if( checkoor(checkxf(x),checkyf(y)) &&  checkoor(checkxr(x),checkyr(y))){
-                        turn_left();turn_left();turn_left();
-                    }else{
-                        if( checkoor(checkxf(x),checkyf(y)) ){
-                            if( mapone[checkxr(x)][checkyr(y)] != 99 && mapone[checkxsw(x)][checkysw(y)] != 99 ){
-                                turn_left();turn_left();turn_left();
-                            }else{
-                                forward_until(1);
-                            }
-                        }else if( checkoor(checkxr(x),checkyr(y)) ){
-                            if( mapone[checkxf(x)][checkyf(y)] != 99 && mapone[checkxne(x)][checkyne(y)] != 99 ){
-                                turn_left();turn_left();turn_left();
-                            }else if( mapone[checkxne(x)][checkyne(y)] != 99 ){
-                                forward_until(1);
-                            }else{
-                                backward();backward();
-                            }
-                        }
-                    }
+                    mapone[x][y] = 98;
+                    backward();
                 }
             }
         }else{
-            forward_until(1);
+            mapone[x][y] = 98;
+            backward();
         }
+
+    }else{
+        if(mapone[checkxf(x)][checkyf(y)] != 99){
+           if( checkoor(checkxr(x),checkyr(y)) ){
+                turn_left();turn_left();
+            }else if( checkoor(checkxl(x),checkyl(y)) ){
+                turn_right();turn_right();
+            }else{
+                if(mapone[checkxr(x)][checkyr(y)] != 99 && mapone[checkxnw(x)][checkynw(y)] != 99 && mapone[checkxsw(x)][checkysw(y)] != 99){
+                    turn_left();turn_left();
+                }
+                else if(mapone[checkxl(x)][checkyl(y)] != 99 && mapone[checkxne(x)][checkyne(y)] != 99 && mapone[checkxse(x)][checkyse(y)] != 99){
+                    turn_right();turn_right();
+                }else{
+                    mapone[x][y] = 98;
+                    backward();
+                }
+            }
+        }else{
+            mapone[x][y] = 98;
+            backward();
+        }
+
     }
-    //*/
 }
 
 ////////////////////////////// place
@@ -1526,28 +1567,28 @@ int checkdiplace(){
 	int i = 0;
     if(!checkoor(checkxf(x),checkyf(y))){
         if(mapone[checkxf(x)][checkyf(y)] == mapone[bx][by]){
-            //printf("front");
+            ////printf("front");
         		i = 0;
             //return 0;
         }
     }
     if(!checkoor(checkxl(x),checkyl(y))){
         if(mapone[checkxl(x)][checkyl(y)] == mapone[bx][by]){
-            //printf("left");
+            ////printf("left");
         		i = 1;
             //return 1;
         }
     }
     if(!checkoor(checkxr(x),checkyr(y))){
         if(mapone[checkxr(x)][checkyr(y)] == mapone[bx][by]){
-            //printf("right");
+            ////printf("right");
         		i = 2;
             //return 2;
         }
     }
     if(!checkoor(checkxb(x),checkyb(y))){
         if(mapone[checkxb(x)][checkyb(y)] == mapone[bx][by]){
-            //printf("back");
+            ////printf("back");
         		i = 3;
             //return 3;
         }
@@ -1652,7 +1693,7 @@ void findboxsmall(){
     }
     prekeep(bx,by);
     keepbox();
-    //printf("keep block\n\n");
+    ////printf("keep block\n\n");
     status = 1;
 }
 void findgoalboxsmall(){
@@ -1680,7 +1721,7 @@ void findgoalboxsmall(){
     preplace1();
     //printxy(x,y);
     closearm();
-    //printf("place box\n\n");
+    ////printf("place box\n\n");
     status = 0;
     map[bx][by]=9;
 }
